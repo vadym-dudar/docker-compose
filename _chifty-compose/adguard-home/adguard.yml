@@ -1,0 +1,45 @@
+version: "3.9"
+
+networks:
+  traefik-network:
+    external: true
+
+services:
+  adguardhome:
+    image: adguard/adguardhome
+    container_name: adguard
+    environment:
+      - PUID=1000 # Don`t forget uncomment 53 and 853 ports in traefik container yml
+      - PGID=1000
+      - TZ=Europe/Kiev
+    volumes:
+      - /var/storj/adguard/conf:/conf
+      - /var/storj/adguard/work:/work
+      - /var/storj/adguard/config:/opt/adguardhome/conf # Don`t forget edit config and set allow_unencrypted_doh=true for DoT working
+    restart: unless-stopped
+    networks:
+      - traefik-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.adguard.rule=Host(`adguard.domain.com`)" # Set your domain
+      - "traefik.http.routers.adguard.entrypoints=websecure"
+      - "traefik.http.services.adguard.loadbalancer.server.port=80"  # Set 80 port as admin port during first run
+      - "traefik.http.routers.adguard.service=adguard"
+      - "traefik.http.routers.adguard.tls.certresolver=leresolver"
+      # DNS-over-TLS
+      - "traefik.tcp.routers.dnsovertls.rule=HostSNI(`dns.domain.com`)" # Set your domain
+      - "traefik.tcp.routers.dnsovertls.entrypoints=dnsovertls"
+      - "traefik.tcp.routers.dnsovertls.tls.certresolver=leresolver"
+      - "traefik.tcp.routers.dnsovertls.service=adguard"
+      # Normal DNS coming in on 53 TCP, no TLS
+      - "traefik.tcp.routers.dns.rule=HostSNI(`dns.domain.com`)" # Set your domain
+      - "traefik.tcp.routers.dns.entrypoints=dns"
+      - "traefik.tcp.routers.dns.service=adguard"
+      # Recieves traffic from both the TLS and non-TLS traefik routers
+      - "traefik.tcp.services.adguard.loadbalancer.server.port=53"
+      # Normal DNS coming in on 53 UDP
+      - "traefik.udp.routers.udpdns.entrypoints=udpdns"
+      - "traefik.udp.routers.udpdns.service=adguard"
+      - "traefik.udp.services.adguard.loadbalancer.server.port=53"
+    depends_on:
+      - traefik
