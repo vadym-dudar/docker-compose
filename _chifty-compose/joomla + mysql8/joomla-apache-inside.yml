@@ -1,0 +1,47 @@
+version: '3.9'
+
+networks:
+  traefik-network:
+    external: true
+
+services:
+  sitename: # Rename as you wish
+    image: joomla:latest
+    container_name: sitename # rename as you wish
+    restart: always
+    environment:
+      JOOMLA_DB_HOST: mysql
+      JOOMLA_DB_PASSWORD: qwerty # change password
+      APACHE_RUN_GROUP: #1000
+      APACHE_RUN_USER: #1000
+      TZ: "Europe/Kiev"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sitename.rule=Host(`hoctm.chifty-db.chifty.top`)"
+      - "traefik.http.routers.sitename.entrypoints=websecure"
+      - "traefik.http.services.sitename.loadbalancer.server.port=80"
+      - "traefik.http.routers.sitename.service=sitename"
+      - "traefik.http.routers.sitename.tls.certresolver=leresolver"
+    networks:
+      - traefik-network
+    volumes:
+      - "/var/storj/sitename/joomla:/var/www/html"
+#      - "/var/www/hoctm/phpconf:/usr/local/etc/php/conf.d"
+#      - "/var/www/hoctm/docker-entrypoint.sh:/entrypoint.sh" # to override the entry point
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: qwerty # Set your Password
+      TZ: "Europe/Kiev"
+    networks:
+      - traefik-network
+    volumes:
+      - "/var/storj/sitename/mysqldb:/var/lib/mysql"
+#      - "/var/www/hoctm/mysqlconfig:/etc/mysql"
+    depends_on:
+      - traefik

@@ -1,0 +1,31 @@
+version: "3.9"
+
+networks:
+  traefik-network:
+    external: true
+
+services:
+  duplicati:
+    image: lscr.io/linuxserver/duplicati:latest
+    container_name: duplicati
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Kiev
+      - CLI_ARGS= #optional
+    volumes:
+      - /var/storj/duplicati/config:/config
+      - /var/storj/duplicati/backups:/backups
+      - /var/storj:/source
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.duplicati.rule=Host(`duplicati.domain.com`)" #Set your domain
+      - "traefik.http.routers.duplicati.entrypoints=websecure"
+      - "traefik.http.services.duplicati.loadbalancer.server.port=8200"
+      - "traefik.http.routers.duplicati.service=duplicati"
+      - "traefik.http.routers.duplicati.tls.certresolver=leresolver"
+    networks:
+      - traefik-network
+    depends_on:
+      - traefik
