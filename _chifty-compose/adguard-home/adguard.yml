@@ -9,13 +9,13 @@ services:
     image: adguard/adguardhome
     container_name: adguard
     environment:
-      - PUID=1000 # Don`t forget uncomment 53 and 853 ports in traefik container yml
+      - PUID=1000 # Dont forget uncomment 53 and 853 ports in traefik container yml
       - PGID=1000
       - TZ=Europe/Kiev
     volumes:
       - /var/storj/adguard/conf:/conf
       - /var/storj/adguard/work:/work
-      - /var/storj/adguard/config:/opt/adguardhome/conf # Don`t forget edit config and set allow_unencrypted_doh=true for DoT working
+      - /var/storj/adguard/config:/opt/adguardhome/conf # Dont forget edit config and set allow_unencrypted_doh=true for DoT working
     restart: unless-stopped
     networks:
       - traefik-network
