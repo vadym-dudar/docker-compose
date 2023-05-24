@@ -1,0 +1,64 @@
+version: "3.5"
+
+services:
+  wgeasy:
+    image: weejewel/wg-easy
+    container_name: wgeasy
+#    network_mode: "host"
+    ports:
+      - "51820:51820/udp"
+      - "51821:51821"
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+      - net.ipv4.ip_forward=1
+    volumes:
+      - ./storj/wgeasy:/etc/wireguard
+    environment:
+      - WG_HOST=chifty-host.chifty.top
+      - PASSWORD=wgpass
+      - WG_PERSISTENT_KEEPALIVE=25
+#      - WG_DEFAULT_ADDRESS=10.8.0.x
+      - WG_ALLOWED_IPS=10.8.0.0/24
+    restart: always
+    networks:
+      - traefik-network
+      - wireguard-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wgeasy.rule=Host(`wireguard.chifty-host.chifty.top`)"
+      - "traefik.http.routers.wgeasy.entrypoints=websecure"
+      - "traefik.http.services.wgeasy.loadbalancer.server.port=51821"
+      - "traefik.http.routers.wgeasy.service=wgeasy"
+      - "traefik.http.routers.wgeasy.tls.certresolver=leresolver"
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:latest
+    container_name: uptime-kuma
+    network_mode: "container:wgeasy"
+    environment:
+      - TZ=Europe/Kiev
+      - UPTIMEKUMA_DB_DRIVER=sqlite3
+      - UPTIMEKUMA_DB_DATASOURCE=/data/uptimekuma.db
+    volumes:
+      - "./storj/uptime-kuma:/data"
+#    networks:
+#      - traefik-network
+    restart: unless-stopped
+    depends_on:
+      - wgeasy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.uptime-kuma.rule=Host(`uptime.chifty-host.chifty.top`)"
+      - "traefik.http.routers.uptime-kuma.entrypoints=websecure"
+      - "traefik.http.services.uptime-kuma.loadbalancer.server.port=3001"
+      - "traefik.http.routers.uptime-kuma.service=uptime-kuma"
+      - "traefik.http.routers.uptime-kuma.tls.certresolver=leresolver"
+
+networks:
+  traefik-network:
+    external: true
+  wireguard-network:
+    external: true
