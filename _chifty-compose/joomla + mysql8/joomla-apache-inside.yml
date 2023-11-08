@@ -17,16 +17,17 @@ services:
       TZ: "Europe/Kiev"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.sitename.rule=Host(`hoctm.chifty-db.chifty.top`)"
-      - "traefik.http.routers.sitename.entrypoints=websecure"
-      - "traefik.http.services.sitename.loadbalancer.server.port=80"
-      - "traefik.http.routers.sitename.service=sitename"
-      - "traefik.http.routers.sitename.tls.certresolver=leresolver"
+      - "traefik.http.routers.sitename.rule=Host(`hoctm.chifty-db.chifty.top`)"  # Rename as you wish
+      - "traefik.http.routers.sitename.entrypoints=websecure"  # Rename as you wish
+      - "traefik.http.services.sitename.loadbalancer.server.port=80"  # Rename as you wish
+      - "traefik.http.routers.sitename.service=sitename"  # Rename as you wish
+      - "traefik.http.routers.sitename.tls.certresolver=leresolver"  # Rename as you wish
     networks:
       - traefik-network
     volumes:
-      - "/var/storj/sitename/joomla:/var/www/html"
-#      - "/var/www/hoctm/phpconf:/usr/local/etc/php/conf.d"
+      - "/var/storj/sitename/joomla:/var/www/html"  # Rename as you wish
+      - "/var/storj/sitename/php.ini:/usr/local/etc/php/php.ini"  # Rename as you wish
+#      - "/var/www/hoctm/phpconf:/usr/local/etc/php/conf.d" 
 #      - "/var/www/hoctm/docker-entrypoint.sh:/entrypoint.sh" # to override the entry point
     depends_on:
       - mysql
@@ -41,7 +42,7 @@ services:
     networks:
       - traefik-network
     volumes:
-      - "/var/storj/sitename/mysqldb:/var/lib/mysql"
+      - "/var/storj/sitename/mysqldb:/var/lib/mysql"  # Rename as you wish
 #      - "/var/www/hoctm/mysqlconfig:/etc/mysql"
     depends_on:
       - traefik

@@ -1,0 +1,26 @@
+version: '3.9'
+
+networks:
+  traefik-network:
+    external: true
+
+volumes:
+  aapanel:
+
+services:
+  aapanel:
+    image: aapanel/aapanel:lnmp
+    container_name: aapanel
+    environment:
+      - TZ=Europe/Kiev
+    restart: unless-stopped
+    ports:
+      - "8886:7800"
+      - "222:21"
+      - "443:443"
+      - "80:80"
+      - "889:888"
+    volumes:
+      - aapanel:/www
+    networks:
+      - traefik-network
