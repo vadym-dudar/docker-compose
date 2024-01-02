@@ -1,0 +1,62 @@
+version: '3.9'
+
+networks:
+  traefik-network:
+    external: true
+
+services:
+  sitename-nginx:  # Rename as you wish
+    image: nginx:alpine-slim
+    container_name: sitename-nginx
+    restart: always
+    environment:
+      TZ: "Europe/Kiev"
+    # ports:
+    #   - 8080:80
+    networks:
+      - traefik-network
+    volumes:
+      - "/var/storj/sitename/joomla:/var/www/html"  # Rename as you wish
+      - "/var/storj/sitename/nginx.conf:/etc/nginx/nginx.conf"
+    depends_on:
+      - sitename
+
+  sitename: # Rename as you wish
+    image: joomla:5-php8.2-fpm-alpine
+    container_name: sitename # rename as you wish
+    restart: always
+    environment:
+      JOOMLA_DB_HOST: sitename-mysql  # Rename as you wish
+      JOOMLA_DB_PASSWORD: qwerty # change password
+      APACHE_RUN_GROUP: #1000
+      APACHE_RUN_USER: #1000
+      TZ: "Europe/Kiev"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sitename.rule=Host(`hoctm.chifty-db.chifty.top`)"  # Rename as you wish
+      - "traefik.http.routers.sitename.entrypoints=websecure"  # Rename as you wish
+      - "traefik.http.services.sitename.loadbalancer.server.port=80"  # Rename as you wish
+      - "traefik.http.routers.sitename.service=sitename"  # Rename as you wish
+      - "traefik.http.routers.sitename.tls.certresolver=leresolver"  # Rename as you wish
+    networks:
+      - traefik-network
+    volumes:
+      - "/var/storj/sitename/joomla:/var/www/html"  # Rename as you wish
+      - "/var/storj/sitename/php.ini:/usr/local/etc/php/php.ini"  # Rename as you wish
+#      - "/var/www/hoctm/phpconf:/usr/local/etc/php/conf.d" 
+#      - "/var/www/hoctm/docker-entrypoint.sh:/entrypoint.sh" # to override the entry point
+    depends_on:
+      - sitename-mysql
+
+  sitename-mysql:
+    image: mysql:8.2
+    container_name: sitename-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: qwerty # Set your Password
+      TZ: "Europe/Kiev"
+    networks:
+      - traefik-network
+    volumes:
+      - "/var/storj/sitename/mysqldb:/var/lib/mysql"  # Rename as you wish
+#      - "/var/www/hoctm/mysqlconfig:/etc/mysql"

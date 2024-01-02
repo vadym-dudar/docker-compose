@@ -3,5 +3,8 @@
         "activityBar.background": "#04360E",
         "titleBar.activeBackground": "#054B13",
         "titleBar.activeForeground": "#EFFEF2"
+    },
+    "yaml.schemas": {
+        "https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json": "file:///c%3A/Intel/dev/docker-compose/_chifty-compose/traefik/traefik.yml"
     }
 }

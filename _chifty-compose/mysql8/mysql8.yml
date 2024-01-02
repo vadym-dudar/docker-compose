@@ -1,0 +1,42 @@
+version: '3.9'
+
+networks:
+  traefik-network:
+    external: true
+
+services:
+  mysql:
+    image: mysql:8.2
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: qwerty # Set your Password
+      TZ: "Europe/Kiev"
+    ports:
+      - "3306:3306"
+    networks:
+      - traefik-network
+    volumes:
+      - "/var/storj/mysql/mysqldb:/var/lib/mysql"  # Rename as you wish
+#      - "/var/storj/mysql/mysqlconfig:/etc/mysql"
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: mysql
+      # PMA_USER: root  # Leave commented if you need login screen
+      # PMA_PASSWORD: qwerty  # Set your Password
+      TZ: "Europe/Kiev"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.phpmyadmin.rule=Host(`pma.chifty-big.pee.re`)"
+      - "traefik.http.routers.phpmyadmin.entrypoints=websecure"
+      - "traefik.http.services.phpmyadmin.loadbalancer.server.port=80"
+      - "traefik.http.routers.phpmyadmin.service=phpmyadmin"
+      - "traefik.http.routers.phpmyadmin.tls.certresolver=leresolver"
+    networks:
+      - traefik-network
+    # volumes:
+    #   - "/var/storj/mysql/phpmyadmin:/sessions" 
